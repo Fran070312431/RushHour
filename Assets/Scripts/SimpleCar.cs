@@ -1,8 +1,4 @@
-using NUnit.Framework;
-using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class SimpleCar : MonoBehaviour
 {

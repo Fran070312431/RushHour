@@ -1,8 +1,4 @@
-using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using static Unity.Collections.AllocatorManager;
 
 public class MusicManager : MonoBehaviour
 {
