@@ -299,7 +299,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20a1616084354fa4689425be1ab83179, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameMusic: {fileID: 8300000, guid: 51193fdd98fb6e24b892dc530aadc9d1, type: 3}
   moveSound: {fileID: 8300000, guid: 2717c715594db184fb1b095b6f472709, type: 3}
   winSound: {fileID: 8300000, guid: 51200e14bdfcb3243809b33afa2c8e70, type: 3}
   invalidMoveSound: {fileID: 8300000, guid: 9682a641fcca09f44833bf4d822b2b6e, type: 3}
@@ -1897,7 +1896,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 899047980}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1079112012}
+        m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
+        m_MethodName: NextLevel
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &899047980
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2048,6 +2059,7 @@ MonoBehaviour:
   restartButton: {fileID: 791804899}
   nextLevelButton: {fileID: 899047979}
   menuButton: {fileID: 594499248}
+  levelText: {fileID: 0}
 --- !u!4 &1079112013
 Transform:
   m_ObjectHideFlags: 0
