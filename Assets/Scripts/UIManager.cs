@@ -9,10 +9,12 @@ public class UIManager : MonoBehaviour
 
     [Header("UI Referencias")]
     public GameObject winPanel;
-    public Button restartButton;
-    public Button nextLevelButton;
-    public Button menuButton;
-    public TextMeshProUGUI levelText; // NUEVO: Para mostrar "NIVEL 1", "NIVEL 2", etc.
+    public UnityEngine.UI.Button restartButton;  // CORREGIDO
+    public UnityEngine.UI.Button nextLevelButton;  // CORREGIDO
+    public UnityEngine.UI.Button menuButton;  // CORREGIDO
+    public TextMeshProUGUI levelText;
+
+    private bool isChangingLevel = false;
 
     void Awake()
     {
@@ -26,27 +28,28 @@ public class UIManager : MonoBehaviour
             winPanel.SetActive(false);
         }
 
-        // NUEVO: Mostrar número de nivel
         UpdateLevelText();
 
-        // Conectar botones
+        // LIMPIAR listeners antes de añadir
         if (restartButton != null)
         {
+            restartButton.onClick.RemoveAllListeners();
             restartButton.onClick.AddListener(RestartLevel);
         }
 
         if (nextLevelButton != null)
         {
+            nextLevelButton.onClick.RemoveAllListeners();
             nextLevelButton.onClick.AddListener(NextLevel);
         }
 
         if (menuButton != null)
         {
+            menuButton.onClick.RemoveAllListeners();
             menuButton.onClick.AddListener(BackToMenu);
         }
     }
 
-    // NUEVO: Actualizar texto del nivel
     void UpdateLevelText()
     {
         if (levelText != null && LevelManager.Instance != null)
@@ -68,31 +71,35 @@ public class UIManager : MonoBehaviour
     {
         Debug.Log("Reiniciando nivel...");
 
-        // ACTUALIZADO: Usar LevelManager si existe
         if (LevelManager.Instance != null)
         {
             LevelManager.Instance.RestartCurrentLevel();
         }
         else
         {
-            // Fallback: Recargar escena actual
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
     }
 
     public void NextLevel()
     {
-        Debug.Log("Siguiente nivel...");
+        // Prevenir llamadas duplicadas
+        if (isChangingLevel)
+        {
+            Debug.LogWarning("NextLevel ya está en progreso, ignorando llamada duplicada");
+            return;
+        }
 
-        // ACTUALIZADO: Usar LevelManager para cargar siguiente nivel
+        isChangingLevel = true;
+        Debug.Log("=== NextLevel() llamado ===");
+
         if (LevelManager.Instance != null)
         {
             LevelManager.Instance.NextLevel();
         }
         else
         {
-            Debug.LogWarning("LevelManager no encontrado. No se puede cargar siguiente nivel.");
-            // Fallback: Reiniciar nivel actual
+            Debug.LogWarning("LevelManager no encontrado");
             RestartLevel();
         }
     }
@@ -101,14 +108,12 @@ public class UIManager : MonoBehaviour
     {
         Debug.Log("Volviendo al menú...");
 
-        // ACTUALIZADO: Usar LevelManager si existe
         if (LevelManager.Instance != null)
         {
             LevelManager.Instance.BackToMenu();
         }
         else
         {
-            // Fallback: Cargar menú directamente
             SceneManager.LoadScene("MenuScene");
         }
     }
