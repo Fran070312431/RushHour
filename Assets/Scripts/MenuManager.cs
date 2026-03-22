@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -11,9 +10,10 @@ public class MenuManager : MonoBehaviour
 
     void Start()
     {
+        // Obtenemos el componente de opciones que está en el mismo objeto
         optionsManager = GetComponent<OptionsManager>();
 
-        // Ocultar panel de confirmación al inicio
+        // Nos aseguramos de que el panel de confirmación esté oculto al arrancar
         if (confirmResetPanel != null)
         {
             confirmResetPanel.SetActive(false);
@@ -22,6 +22,7 @@ public class MenuManager : MonoBehaviour
 
     public void PlayGame()
     {
+        // Lógica para empezar a jugar: intenta cargar el nivel actual guardado
         if (LevelManager.Instance != null)
         {
             int currentLevel = LevelManager.Instance.GetCurrentLevel();
@@ -30,19 +31,21 @@ public class MenuManager : MonoBehaviour
         }
         else
         {
+            // Si no hay LevelManager, carga la escena de juego básica por defecto
             SceneManager.LoadScene("GameScene");
         }
     }
 
     public void OpenOptions()
     {
+        // Llama a la función del OptionsManager para abrir el panel de ajustes
         if (optionsManager != null)
         {
             optionsManager.OpenOptions();
         }
     }
 
-    // Mostrar panel de confirmación
+    // Activa el panel de aviso cuando el usuario quiere borrar sus datos
     public void ShowResetConfirmation()
     {
         if (confirmResetPanel != null)
@@ -51,7 +54,7 @@ public class MenuManager : MonoBehaviour
         }
     }
 
-    // Cancelar reset
+    // Simplemente cierra el panel si el usuario se arrepiente del reset
     public void CancelReset()
     {
         if (confirmResetPanel != null)
@@ -60,32 +63,35 @@ public class MenuManager : MonoBehaviour
         }
     }
 
-    // Confirmar reset
+    // Función definitiva para borrar todo el progreso del jugador
     public void ConfirmReset()
     {
         Debug.Log("=== RESETEAR PROGRESO ===");
 
-        // Resetear LevelManager
+        // Avisa al LevelManager para que vuelva al nivel inicial
         if (LevelManager.Instance != null)
         {
             LevelManager.Instance.ResetProgress();
         }
 
-        // Borrar todos los datos guardados
+        // Borra físicamente todos los datos guardados en PlayerPrefs
         PlayerPrefs.DeleteAll();
         PlayerPrefs.Save();
 
         Debug.Log("Progreso reseteado. Volviendo al Nivel 1...");
 
-        // Recargar el menú
+        // Recargamos el menú para que se actualicen los textos y botones
         SceneManager.LoadScene("MenuScene");
     }
 
     public void QuitGame()
     {
         Debug.Log("Saliendo del juego...");
+
+        // Cierra la aplicación (solo funciona en el juego ya buildeado)
         Application.Quit();
 
+        // Este código especial hace que también se detenga el PlayMode en el editor de Unity
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #endif

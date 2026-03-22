@@ -8,7 +8,7 @@ public class SimpleCar : MonoBehaviour
     public bool isPlayerCar = false;
 
     [Header("Sprite del Vehículo")]
-    public Sprite carSprite; // NUEVO: Arrastra tu sprite aquí
+    public Sprite carSprite; // Referencia para el aspecto visual del coche
 
     [Header("Posición en Grid")]
     public Vector2Int gridPos = Vector2Int.zero;
@@ -17,39 +17,39 @@ public class SimpleCar : MonoBehaviour
     private bool dragging = false;
     private Vector3 dragStartPos;
     private Vector2Int dragStartGridPos;
-    private SpriteRenderer spriteRenderer; // CAMBIADO de Renderer a SpriteRenderer
+    private SpriteRenderer spriteRenderer;
     private Color originalColor;
 
     void Start()
     {
         cam = Camera.main;
 
-        // Obtener o crear SpriteRenderer
+        // Buscamos el componente SpriteRenderer o lo creamos si no existe
         spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer == null)
         {
             spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
         }
 
-        // Aplicar sprite personalizado
+        // Si hemos asignado un sprite en el inspector, lo aplicamos aquí
         if (carSprite != null)
         {
             spriteRenderer.sprite = carSprite;
         }
 
-        // Color
+        // Definimos el color: rojo si es el protagonista, blanco (color del sprite) para los demás
         if (isPlayerCar)
         {
             originalColor = Color.red;
         }
         else
         {
-            originalColor = Color.white; // Color original del sprite
+            originalColor = Color.white;
         }
 
         spriteRenderer.color = originalColor;
 
-        // Ajustar tamaño según orientación y longitud
+        // Ajustamos la escala para que el coche ocupe las celdas que le corresponden
         AdjustScale();
 
         UpdatePosition();
@@ -62,13 +62,13 @@ public class SimpleCar : MonoBehaviour
 
         if (carSprite != null)
         {
-            // Obtener tamaño real del sprite
+            // Calculamos el tamaño real del sprite para escalarlo correctamente al grid
             float spriteWidth = carSprite.bounds.size.x;
             float spriteHeight = carSprite.bounds.size.y;
 
             if (horizontal)
             {
-                // El sprite debe ocupar 'length' celdas horizontalmente
+                // Cálculo para coches que se mueven a izquierda/derecha
                 float targetWidth = length * cellSize - padding;
                 float targetHeight = cellSize - padding;
 
@@ -79,7 +79,7 @@ public class SimpleCar : MonoBehaviour
             }
             else
             {
-                // El sprite debe ocupar 'length' celdas verticalmente
+                // Cálculo para coches que se mueven arriba/abajo
                 float targetWidth = cellSize - padding;
                 float targetHeight = length * cellSize - padding;
 
@@ -91,7 +91,7 @@ public class SimpleCar : MonoBehaviour
         }
         else
         {
-            // Si no hay sprite, usar escala por defecto
+            // Fallback por si no hay sprite asignado todavía
             if (horizontal)
                 transform.localScale = new Vector3(length - 0.1f, 0.9f, 1);
             else
@@ -101,9 +101,11 @@ public class SimpleCar : MonoBehaviour
 
     void OnMouseDown()
     {
+        // Al hacer click, guardamos donde estamos para calcular el movimiento después
         dragging = true;
         dragStartPos = transform.position;
         dragStartGridPos = gridPos;
+        // Efecto visual de selección
         spriteRenderer.color = originalColor * 1.3f;
     }
 
@@ -117,6 +119,7 @@ public class SimpleCar : MonoBehaviour
         Vector3 delta = mousePos - dragStartPos;
         float cellSize = SimpleGrid.Instance.cellSize;
 
+        // Calculamos cuántas celdas quiere moverse el jugador según el arrastre del ratón
         int cellsDelta = horizontal
             ? Mathf.RoundToInt(delta.x / cellSize)
             : Mathf.RoundToInt(delta.y / cellSize);
@@ -133,6 +136,7 @@ public class SimpleCar : MonoBehaviour
         Vector2Int testPos = dragStartGridPos;
         Vector2Int lastValidPos = dragStartGridPos;
 
+        // Bucle crítico: comprobamos celda por celda para no saltarnos obstáculos
         for (int i = 0; i < steps; i++)
         {
             if (horizontal)
@@ -144,13 +148,14 @@ public class SimpleCar : MonoBehaviour
                 testPos.y += step;
             }
 
+            // Si la siguiente celda es válida, nos movemos a ella mentalmente
             if (IsValidPosition(testPos))
             {
                 lastValidPos = testPos;
             }
             else
             {
-                break;
+                break; // Si hay choque, paramos el bucle aquí
             }
         }
 
@@ -162,6 +167,7 @@ public class SimpleCar : MonoBehaviour
     {
         dragging = false;
 
+        // Si el coche se ha movido de celda, disparamos el sonido de movimiento
         if (gridPos != dragStartGridPos)
         {
             if (AudioManager.Instance != null)
@@ -172,7 +178,7 @@ public class SimpleCar : MonoBehaviour
 
         UpdatePosition();
         spriteRenderer.color = originalColor;
-        CheckWin();
+        CheckWin(); // Solo el coche rojo puede activar esta función
     }
 
     void UpdatePositionSmooth()
@@ -192,6 +198,7 @@ public class SimpleCar : MonoBehaviour
         Vector3 pos = SimpleGrid.Instance.GetWorldPos(gPos.x, gPos.y);
         float cellSize = SimpleGrid.Instance.cellSize;
 
+        // Ajustamos la posición visual para que el centro del coche coincida con sus celdas
         if (horizontal)
             pos.x += (length - 1) * cellSize / 2f;
         else
@@ -202,6 +209,7 @@ public class SimpleCar : MonoBehaviour
 
     bool IsValidPosition(Vector2Int pos)
     {
+        // Lógica de límites del tablero y excepción de la salida para el jugador
         if (isPlayerCar && horizontal)
         {
             if (pos.y == 3)
@@ -220,6 +228,7 @@ public class SimpleCar : MonoBehaviour
         }
         else
         {
+            // Verificación de límites estándar para los coches normales
             if (horizontal)
             {
                 if (pos.x < 0 || pos.x + length > SimpleGrid.Instance.size)
@@ -236,6 +245,7 @@ public class SimpleCar : MonoBehaviour
             }
         }
 
+        // Chequeo de colisión contra todos los demás coches de la escena
         SimpleCar[] allCars = FindObjectsByType<SimpleCar>(FindObjectsSortMode.None);
         foreach (SimpleCar other in allCars)
         {
@@ -250,6 +260,7 @@ public class SimpleCar : MonoBehaviour
 
     bool CheckCollision(Vector2Int myPos, SimpleCar other)
     {
+        // Doble bucle para comparar cada celda que ocupamos nosotros con cada celda del otro coche
         for (int i = 0; i < length; i++)
         {
             Vector2Int myCell = horizontal ?
@@ -264,7 +275,7 @@ public class SimpleCar : MonoBehaviour
 
                 if (myCell == otherCell)
                 {
-                    return true;
+                    return true; // Hay solapamiento
                 }
             }
         }
@@ -277,6 +288,7 @@ public class SimpleCar : MonoBehaviour
         if (!isPlayerCar) return;
         if (!horizontal) return;
 
+        // Si el coche rojo llega a la coordenada de salida, lanzamos victoria
         if (gridPos.x == 6 && gridPos.y == 3)
         {
             Debug.Log("¡¡¡GANASTE!!!");
@@ -295,6 +307,7 @@ public class SimpleCar : MonoBehaviour
 
     void OnDrawGizmosSelected()
     {
+        // Función para dibujar los cubos de debug en el editor y ver las celdas ocupadas
         if (SimpleGrid.Instance == null) return;
 
         Gizmos.color = isPlayerCar ? Color.red : Color.yellow;
@@ -308,9 +321,9 @@ public class SimpleCar : MonoBehaviour
             Vector3 cellWorldPos = SimpleGrid.Instance.GetWorldPos(cell.x, cell.y);
             Gizmos.DrawWireCube(cellWorldPos, Vector3.one * SimpleGrid.Instance.cellSize * 0.9f);
 
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
             UnityEditor.Handles.Label(cellWorldPos, $"{cell.x},{cell.y}");
-            #endif
+#endif
         }
     }
 }
